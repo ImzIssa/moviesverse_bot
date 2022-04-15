@@ -3,7 +3,8 @@ from download_bot.download import *
 
 
 if __name__ == '__main__':
-    search(input('Enter Movie Name: ').strip().lower())
+#     search(input('Enter Movie Name: ').strip().lower()) 
+    search('fight club') #not yet able to handle all user input 
     url = get_link_to_fast_server(input('\n\nDownload Link in 480p/720p/1080p: ').strip())
     print(url); print()
     load_page(url)
