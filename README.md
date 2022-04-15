@@ -10,4 +10,4 @@ uses chrome brower
 
 ## code works but is not efficient 
 
-#future plans include making code object oriented, fast and be able to download from tfpdl
+# future plans include making code object oriented, fast and be able to download from tfpdl
