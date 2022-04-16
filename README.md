@@ -1,4 +1,4 @@
-# a bot that downloads movies from moviesverse.biz
+# a bot that downloads movies from moviesverse.club
 uses chrome brower
 
 # requires chromedrivers depending on your current version of chrome
