@@ -1,4 +1,5 @@
 import os
+import sys
 import requests as rq
 from bs4 import BeautifulSoup
 
@@ -10,38 +11,90 @@ headers = {
 }
 
 
-def search(movie_name):
-    movie_name =  "+".join(str(movie_name).strip().lower().split())
-    url = f'https://moviesverse.club/?s={movie_name}'
-    res = rq.get(url, headers=headers)
+def search():
+    while True:
+        movie_name = input('Enter Movie Name: ').strip().lower()
+        movie_name =  "+".join(str(movie_name).strip().lower().split())
+        url = f'https://moviesverse.club/?s={movie_name}'
+        res = rq.get(url, headers=headers)
 
-    if(res.status_code == 200):
-        soup = BeautifulSoup(res.text, 'html.parser')
-        results = soup.find('div', {'id': 'content_box'})
-        print(results.h1.text)
-        print()
-
-        for article in results.find_all('article'): 
-            movie_link = article.a['href'] 
-            movie_img = article.img['src']
-            print(f'Movie Link: {movie_link}')
-            print(f'Image Link: {movie_img}')
-            get_links_to_archives(movie_link)
+        if(res.status_code == 200):
+            soup = BeautifulSoup(res.text, 'html.parser')
+            results = soup.find('div', {'id': 'content_box'})
+            print(results.h1.text)
+            print()
         
+        if (results.div['class'] == ['no-results']):
+            print('Movie is Unavailable. Try Different Movie or checking Spelling.\n')
+        else:
+            for article in results.find_all('article'):
+                if "[HQ Fan Dub]" in article.header.text.strip():
+                    continue
+                print(article.header.h2.a['title']) 
+                # movie_link = article.a['href'] 
+                # movie_img = article.img['src']
+                print(f"Movie Link: {article.a['href']}")
+                print(f"Image Link: {article.img['src']}")
+                print(); print("-" * 120)
+            break
 
+    # get_links_to_archives(input("\nEnter Movie Link of Prefered Movie: "))
+        
 def get_links_to_archives(url):
-    pxls = {0:'480p', 1:'720p', 2:'1080p'}
+    pxls_url = {}
+    pxls_dic = {}
+    pxls_list = ['480p', '720p', '1080p'] 
+    i = 0
+    for pxl in pxls_list:
+        if pxl in url:
+            pxls_dic[i] = pxl
+            i += 1
+
     res = rq.get(url, headers=headers)
     if(res.status_code == 200):
         soup = BeautifulSoup(res.text, 'html.parser')
-        achive_download_links = soup.find_all('a', {'class': 'maxbutton'})
-        i = 0
+        archive_download_links = soup.find_all('a', {'class': 'maxbutton'})
         print('\nDownload Links')
-        for link in achive_download_links:
-            print(f'{pxls[i]} : {link["href"]}')
-            i += 1
-            if i == 3: i = 0
+        if (len(pxls_dic) == len(archive_download_links)):
+            for idx, link in enumerate(archive_download_links):
+                print(f'{pxls_dic[idx]} : {link["href"]}')
+                pxls_url[pxls_dic[idx]] = link['href']
+        else:
+            i = 0
+            for link in archive_download_links:
+                print(f'{pxls_list[i]} : {link["href"]}')
+                pxls_url[pxls_list[i]] = link['href']
+                i += 1
+                if i==3: i=0
 
+    return select_quality(pxls_url)
+
+def select_quality(pxl_url_dic):
+    print()
+    url = " "
+    pxls = ""
+    string = "Download in "
+    for key in pxl_url_dic.keys():
+        string += key + " || "
+        pxls += key+" || "
+
+    while True:
+        res = input(f'\n{string[:-3]} (Link or Quality): ').strip()
+        if res[0].isdigit() and (int(res[:3]) and len(res) >= 3):
+            try:
+                pxl = str(res)+"p"
+                print(pxl_url_dic[pxl])
+                url = get_link_to_fast_server(pxl_url_dic[pxl])
+                break
+            except KeyError:
+                print(f'{res} is an invalid movie quality\nor movie is unavailable in desired quality')
+                print(f'Try {pxls[:-3]}')
+        else:
+            print(res)
+            url = get_link_to_fast_server(res)
+            break
+    
+    return url
 
 
 def get_link_to_fast_server(url):
