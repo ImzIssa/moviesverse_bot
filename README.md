@@ -1,5 +1,5 @@
 # a bot that downloads movies from moviesverse.club
-uses chrome brower
+uses chrome brower on windows 10
 
 # requires chromedrivers depending on your current version of chrome
 
